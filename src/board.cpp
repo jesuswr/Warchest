@@ -242,8 +242,16 @@ void board::move(position p, position new_p, token t) {
 }
 
 
-void board::recruit(token k) {
+void board::recruit(token t) {
+    if (!token_in(hand[current_player], t))
+        throw invalid_argument("The token doesnt exist in the hand.");
+    if (!token_in(recruitment[current_player], t))
+        throw invalid_argument("The token doesnt exist in the recruitment.");
 
+    erase_token_from(hand[current_player], t);
+    discard[current_player].push_back(t);
+    erase_token_from(recruitment[current_player], t);
+    bag[current_player].push_back(t);
 }
 
 
