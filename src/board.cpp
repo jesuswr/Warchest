@@ -16,6 +16,28 @@ bool are_positions_adjacent(position a, position b)
     return (a.first == b.first && abs(a.second - b.second) == 1) || (a.second == b.second && abs(a.first - b.first) == 1);
 }
 
+position ask_for_position() {
+    position p;
+    cout << "Enter two numbers representig row and column" << endl;
+    cin >> p.first >> p.second;
+    return p;
+}
+
+token ask_for_token() {
+    string s;
+    cout << "Enter one of Archer, Crossbowman, Knight or Mercenary" << endl;
+    cin >> s;
+    if (s == "Archer")
+        return Archer;
+    if (s == "Crossbowman")
+        return Crossbowman;
+    if (s == "Knight")
+        return Knight;
+    if (s == "Mercenary")
+        return Mercenary;
+    throw "Wrong input unit.";
+}
+
 vector<position> get_adjacent_positions(position p)
 {
     vector<position> ret;
@@ -215,11 +237,11 @@ void board::erase_token_from_map(position p, int player, token t)
 void board::place(position p, token t)
 {
     if (!is_position_inside(p))
-        throw invalid_argument("Position out of board.");
+        throw "Position out of board.";
     if (!adjacent_control_token_exists(p, current_player))
-        throw invalid_argument("Position not adjacent to a controlled position.");
+        throw "Position not adjacent to a controlled position.";
     if (!token_in(hand[current_player], t))
-        throw invalid_argument("The token doesnt exist in the hand.");
+        throw "The token doesnt exist in the hand.";
 
     erase_token_from(hand[current_player], t);
     board_map[p].push_back({t, current_player});
@@ -228,15 +250,15 @@ void board::place(position p, token t)
 void board::control(position p, token t)
 {
     if (!is_position_inside(p))
-        throw invalid_argument("Position out of board.");
+        throw "Position out of board.";
     if (!token_in(hand[current_player], t))
-        throw invalid_argument("The token doesnt exist in the hand.");
+        throw "The token doesnt exist in the hand.";
     if (is_token_from_player_in_position(p, current_player, Control))
-        throw invalid_argument("This position is already under control.");
+        throw "This position is already under control.";
     if (!player_has_token_in_position(p))
-        throw invalid_argument("No token in the given position.");
+        throw "No token in the given position.";
     if (!is_control_zone(p))
-        throw invalid_argument("This isn't a capture zone.");
+        throw "This isn't a capture zone.";
 
     erase_token_from(hand[current_player], t);
     discard[current_player].push_back(t);
@@ -252,13 +274,13 @@ void board::control(position p, token t)
 void board::move(position p, position new_p, token t)
 {
     if (!is_position_inside(p) || !is_position_inside(new_p))
-        throw invalid_argument("Position out of board.");
+        throw "Position out of board.";
     if (!token_in(hand[current_player], t))
-        throw invalid_argument("The token doesnt exist in the hand.");
+        throw "The token doesnt exist in the hand.";
     if (!is_token_from_player_in_position(p, current_player, t))
-        throw invalid_argument("This position is already under control.");
+        throw "This position is already under control.";
     if (!are_positions_adjacent(p, new_p))
-        throw invalid_argument("These positions aren't adjacent.");
+        throw "These positions aren't adjacent.";
 
     erase_token_from(hand[current_player], t);
     discard[current_player].push_back(t);
@@ -269,9 +291,9 @@ void board::move(position p, position new_p, token t)
 void board::recruit(token t)
 {
     if (!token_in(hand[current_player], t))
-        throw invalid_argument("The token doesnt exist in the hand.");
+        throw "The token doesnt exist in the hand.";
     if (!token_in(recruitment[current_player], t))
-        throw invalid_argument("The token doesnt exist in the recruitment.");
+        throw "The token doesnt exist in the recruitment.";
 
     erase_token_from(hand[current_player], t);
     discard[current_player].push_back(t);
@@ -282,37 +304,37 @@ void board::recruit(token t)
 void board::attack(position p, token t, position rival_p, token rival_t)
 {
     if (!token_in(hand[current_player], t))
-        throw invalid_argument("The token doesnt exist in the hand.");
+        throw "The token doesnt exist in the hand.";
     if (!is_token_from_player_in_position(p, current_player, t))
-        throw invalid_argument("The token doesnt exist in the position.");
+        throw "The token doesnt exist in the position.";
     if (!is_token_from_player_in_position(rival_p, 1 - current_player, rival_t))
-        throw invalid_argument("The rival token doesnt exist in the position.");
+        throw "The rival token doesnt exist in the position.";
 
     if (t == Archer)
     {
         if (max(abs(p.first - rival_p.first), abs(p.second - rival_p.second)) > 2)
-            throw invalid_argument("Can't reach that far.");
+            throw "Can't reach that far.";
     }
     else if (t == Crossbowman)
     {
         if (p.first != rival_p.first && p.second != rival_p.second)
-            throw invalid_argument("Can't attack diagonally.");
+            throw "Can't attack diagonally.";
         if (abs(p.first - rival_p.first) + abs(p.second - rival_p.second) > 2)
-            throw invalid_argument("Can't reach that far.");
+            throw "Can't reach that far.";
     }
     else if (t == Knight)
     {
         if (p.first != rival_p.first && p.second != rival_p.second)
-            throw invalid_argument("Can't attack diagonally.");
+            throw "Can't attack diagonally.";
         if (abs(p.first - rival_p.first) + abs(p.second - rival_p.second) > 1)
-            throw invalid_argument("Can't reach that far.");
+            throw "Can't reach that far.";
     }
     else if (t == Mercenary)
     {
         if (p.first != rival_p.first && p.second != rival_p.second)
-            throw invalid_argument("Can't attack diagonally.");
+            throw "Can't attack diagonally.";
         if (abs(p.first - rival_p.first) + abs(p.second - rival_p.second) > 1)
-            throw invalid_argument("Can't reach that far.");
+            throw "Can't reach that far.";
     }
 
     erase_token_from(hand[current_player], t);
@@ -323,9 +345,9 @@ void board::attack(position p, token t, position rival_p, token rival_t)
 void board::initiative(token t)
 {
     if (!token_in(hand[current_player], t))
-        throw invalid_argument("The token doesnt exist in the hand.");
+        throw "The token doesnt exist in the hand.";
     if (next_players_order[0] == current_player)
-        throw invalid_argument("Already have the initiave.");
+        throw "Already have the initiave.";
 
     swap(next_players_order[0], next_players_order[1]);
 }
@@ -368,6 +390,7 @@ void board::play_turn()
     cin >> command;
     if (command == "Place")
     {
+        position p = ask_for_position();
     }
     else if (command == "Control")
     {
@@ -403,5 +426,6 @@ void board::play()
             while (!hand[current_player].empty())
                 play_turn();
         }
+        players_order = next_players_order;
     }
 }
