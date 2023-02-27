@@ -2,6 +2,8 @@
 #include <string>
 #include <map>
 #include <algorithm>
+#include <time.h>
+#include <random>
 #include "board.hpp"
 
 using namespace std;
@@ -21,9 +23,10 @@ position ask_for_position()
     position p;
     cout << "Enter two numbers representig row and column" << endl;
     cin >> p.first >> p.second;
-    if (!cin.good()) {
+    if (!cin.good())
+    {
         cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(),'\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         throw string("Wrong position input.");
     }
     return p;
@@ -32,7 +35,7 @@ position ask_for_position()
 token ask_for_token()
 {
     string s;
-    cout << "Enter one of Archer, Crossbowman, Knight or Mercenary" << endl;
+    cout << "Enter one of Archer, Crossbowman, Knight, Mercenary or Royal" << endl;
     cin >> s;
     if (s == "Archer")
         return Archer;
@@ -42,6 +45,8 @@ token ask_for_token()
         return Knight;
     if (s == "Mercenary")
         return Mercenary;
+    if (s == "Royal")
+        return Royal;
     throw string("Wrong input unit.");
 }
 
@@ -101,6 +106,9 @@ string get_token_name(token tk)
 // init bag, recruitment and control
 board::board()
 {
+    // init random seed for random shuffles later
+    std::srand ( unsigned ( time(0) ) );
+
     // assign initial control tokens to corners of board
     board_map[{0, 0}].push_back({Control, 0});
     board_map[{4, 4}].push_back({Control, 1});
@@ -285,7 +293,7 @@ void board::move(position p, position new_p, token t)
     if (!token_in(hand[current_player], t))
         throw string("The token doesnt exist in the hand.");
     if (!is_token_from_player_in_position(p, current_player, t))
-        throw string("This position is already under control.");
+        throw string("The token doesnt exist in the position..");
     if (!are_positions_adjacent(p, new_p))
         throw string("These positions aren't adjacent.");
 
@@ -399,22 +407,46 @@ void board::play_turn()
         cin >> command;
         if (command == "Place")
         {
+            cout << "Enter the position and unit" << endl;
             position p = ask_for_position();
+            token t = ask_for_token();
+            place(p, t);
         }
         else if (command == "Control")
         {
+            cout << "Enter the position and unit" << endl;
+            position p = ask_for_position();
+            token t = ask_for_token();
+            control(p, t);
         }
         else if (command == "Move")
         {
+            cout << "Enter the old position, the unit and the new position" << endl;
+            position p = ask_for_position();
+            token t = ask_for_token();
+            position new_p = ask_for_position();
+            move(p, new_p, t);
         }
         else if (command == "Recruit")
         {
+            cout << "Enter the unit" << endl;
+            token t = ask_for_token();
+            recruit(t);
         }
         else if (command == "Attack")
         {
+            cout << "Enter your position and unit, then the opponent position and unit" << endl;
+            position p = ask_for_position();
+            token t = ask_for_token();
+            position op_p = ask_for_position();
+            token op_t = ask_for_token();
+            attack(p, t, op_p, op_t);
         }
         else if (command == "Initiative")
         {
+            cout << "Enter the unit" << endl;
+            token t = ask_for_token();
+            initiative(t);
         }
         else
         {
@@ -437,8 +469,13 @@ void board::play()
         {
             current_player = players_order[_i];
             get_hand(current_player);
-            while (!hand[current_player].empty()) 
+            while (!hand[current_player].empty()) {
                 play_turn();
+                if (won(current_player)) {
+                    cout << "Player " << get_player_name(current_player) << " won!" << endl;
+                    return;
+                }
+            }
         }
         players_order = next_players_order;
     }
