@@ -34,7 +34,7 @@ private:
     string print_game_status();
     void place(position p, token t);
     void control(position p, token t);
-    void move(position p, token t);
+    void move(position p, position new_p, token t);
     void recruit(token k);
     void attack(position p, token t, token rival_t);
     void initiative(token k);

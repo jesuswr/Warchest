@@ -12,6 +12,11 @@ bool is_position_inside(position p) {
 }
 
 
+bool are_positions_adjacent(position a, position b) {
+    return (a.first == b.first && abs(a.second - b.second) == 1) || (a.second == b.second && abs(a.first - b.first) == 1);
+}
+
+
 vector<position> get_adjacent_positions(position p) {
     vector<position> ret;
     vector< pair<int, int> > moves = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
@@ -220,8 +225,20 @@ void board::control(position p, token t) {
 }
 
 
-void board::move(position p, token t) {
-
+void board::move(position p, position new_p, token t) {
+    if (!is_position_inside(p) || !is_position_inside(new_p))
+        throw invalid_argument("Position out of board.");
+    if (!token_in(hand[current_player], t))
+        throw invalid_argument("The token doesnt exist in the hand.");
+    if (!is_token_from_player_in_position(p, current_player, t))
+        throw invalid_argument("This position is already under control.");
+    if (!are_positions_adjacent(p, new_p))
+        throw invalid_argument("These positions aren't adjacent.");
+    
+    erase_token_from(hand[current_player], t);
+    discard[current_player].push_back(t);
+    erase_token_from_map(p, current_player, t);
+    board_map[new_p].push_back({t, current_player});
 }
 
 
