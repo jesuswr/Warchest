@@ -3,13 +3,14 @@
 
 using namespace std;
 
-
-void play() {
+void play()
+{
     board b;
     b.play();
 }
 
-int main() {
+int main()
+{
     play();
     return 0;
 }
