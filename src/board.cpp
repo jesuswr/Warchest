@@ -8,6 +8,7 @@ using namespace std;
 
 
 vector<vector<pair<int, token>>> assign_units() {
+    // randomize the units, first two to a player and the other to the other player
     vector<pair<int, token>> units = {{4, Archer}, {5, Crossbowman}, {5, Knight}, {5, Mercenary}};
     random_shuffle(units.begin(), units.end());
     return {{units[0], units[1]}, {units[2], units[3]}};
@@ -54,13 +55,14 @@ string board::print_board() {
             }
 
             row_str += " ";
-            if (player_name.empty())
-                row_str += to_string(col);
+            if (!player_name.empty())
+                row_str +=player_name[0];
             else
                 row_str += ".";
             row_str += " ";
         }
         row_str += "\n";
+        ret += row_str;
     }
     return ret;
 }
