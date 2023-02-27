@@ -22,7 +22,7 @@ class board {
 private:
     int play = 0, current_player = 0;
     vector<int> players_order = {0, 1}, next_players_order = {0, 1};
-    map<position, vector<token_with_player>> map;
+    map<position, vector<token_with_player>> board_map;
     vector<token> bag[2], hand[2], recruitment[2], discard[2];
     int control_tokens[2] = {2, 2};
 

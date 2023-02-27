@@ -7,4 +7,6 @@
 
 void play();
 
+int main();
+
 #endif
