@@ -16,14 +16,21 @@ bool are_positions_adjacent(position a, position b)
     return (a.first == b.first && abs(a.second - b.second) == 1) || (a.second == b.second && abs(a.first - b.first) == 1);
 }
 
-position ask_for_position() {
+position ask_for_position()
+{
     position p;
     cout << "Enter two numbers representig row and column" << endl;
     cin >> p.first >> p.second;
+    if (!cin.good()) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(),'\n');
+        throw string("Wrong position input.");
+    }
     return p;
 }
 
-token ask_for_token() {
+token ask_for_token()
+{
     string s;
     cout << "Enter one of Archer, Crossbowman, Knight or Mercenary" << endl;
     cin >> s;
@@ -35,7 +42,7 @@ token ask_for_token() {
         return Knight;
     if (s == "Mercenary")
         return Mercenary;
-    throw "Wrong input unit.";
+    throw string("Wrong input unit.");
 }
 
 vector<position> get_adjacent_positions(position p)
@@ -237,11 +244,11 @@ void board::erase_token_from_map(position p, int player, token t)
 void board::place(position p, token t)
 {
     if (!is_position_inside(p))
-        throw "Position out of board.";
+        throw string("Position out of board.");
     if (!adjacent_control_token_exists(p, current_player))
-        throw "Position not adjacent to a controlled position.";
+        throw string("Position not adjacent to a controlled position.");
     if (!token_in(hand[current_player], t))
-        throw "The token doesnt exist in the hand.";
+        throw string("The token doesnt exist in the hand.");
 
     erase_token_from(hand[current_player], t);
     board_map[p].push_back({t, current_player});
@@ -250,15 +257,15 @@ void board::place(position p, token t)
 void board::control(position p, token t)
 {
     if (!is_position_inside(p))
-        throw "Position out of board.";
+        throw string("Position out of board.");
     if (!token_in(hand[current_player], t))
-        throw "The token doesnt exist in the hand.";
+        throw string("The token doesnt exist in the hand.");
     if (is_token_from_player_in_position(p, current_player, Control))
-        throw "This position is already under control.";
+        throw string("This position is already under control.");
     if (!player_has_token_in_position(p))
-        throw "No token in the given position.";
+        throw string("No token in the given position.");
     if (!is_control_zone(p))
-        throw "This isn't a capture zone.";
+        throw string("This isn't a capture zone.");
 
     erase_token_from(hand[current_player], t);
     discard[current_player].push_back(t);
@@ -274,13 +281,13 @@ void board::control(position p, token t)
 void board::move(position p, position new_p, token t)
 {
     if (!is_position_inside(p) || !is_position_inside(new_p))
-        throw "Position out of board.";
+        throw string("Position out of board.");
     if (!token_in(hand[current_player], t))
-        throw "The token doesnt exist in the hand.";
+        throw string("The token doesnt exist in the hand.");
     if (!is_token_from_player_in_position(p, current_player, t))
-        throw "This position is already under control.";
+        throw string("This position is already under control.");
     if (!are_positions_adjacent(p, new_p))
-        throw "These positions aren't adjacent.";
+        throw string("These positions aren't adjacent.");
 
     erase_token_from(hand[current_player], t);
     discard[current_player].push_back(t);
@@ -291,9 +298,9 @@ void board::move(position p, position new_p, token t)
 void board::recruit(token t)
 {
     if (!token_in(hand[current_player], t))
-        throw "The token doesnt exist in the hand.";
+        throw string("The token doesnt exist in the hand.");
     if (!token_in(recruitment[current_player], t))
-        throw "The token doesnt exist in the recruitment.";
+        throw string("The token doesnt exist in the recruitment.");
 
     erase_token_from(hand[current_player], t);
     discard[current_player].push_back(t);
@@ -304,37 +311,37 @@ void board::recruit(token t)
 void board::attack(position p, token t, position rival_p, token rival_t)
 {
     if (!token_in(hand[current_player], t))
-        throw "The token doesnt exist in the hand.";
+        throw string("The token doesnt exist in the hand.");
     if (!is_token_from_player_in_position(p, current_player, t))
-        throw "The token doesnt exist in the position.";
+        throw string("The token doesnt exist in the position.");
     if (!is_token_from_player_in_position(rival_p, 1 - current_player, rival_t))
-        throw "The rival token doesnt exist in the position.";
+        throw string("The rival token doesnt exist in the position.");
 
     if (t == Archer)
     {
         if (max(abs(p.first - rival_p.first), abs(p.second - rival_p.second)) > 2)
-            throw "Can't reach that far.";
+            throw string("Can't reach that far.");
     }
     else if (t == Crossbowman)
     {
         if (p.first != rival_p.first && p.second != rival_p.second)
-            throw "Can't attack diagonally.";
+            throw string("Can't attack diagonally.");
         if (abs(p.first - rival_p.first) + abs(p.second - rival_p.second) > 2)
-            throw "Can't reach that far.";
+            throw string("Can't reach that far.");
     }
     else if (t == Knight)
     {
         if (p.first != rival_p.first && p.second != rival_p.second)
-            throw "Can't attack diagonally.";
+            throw string("Can't attack diagonally.");
         if (abs(p.first - rival_p.first) + abs(p.second - rival_p.second) > 1)
-            throw "Can't reach that far.";
+            throw string("Can't reach that far.");
     }
     else if (t == Mercenary)
     {
         if (p.first != rival_p.first && p.second != rival_p.second)
-            throw "Can't attack diagonally.";
+            throw string("Can't attack diagonally.");
         if (abs(p.first - rival_p.first) + abs(p.second - rival_p.second) > 1)
-            throw "Can't reach that far.";
+            throw string("Can't reach that far.");
     }
 
     erase_token_from(hand[current_player], t);
@@ -345,9 +352,9 @@ void board::attack(position p, token t, position rival_p, token rival_t)
 void board::initiative(token t)
 {
     if (!token_in(hand[current_player], t))
-        throw "The token doesnt exist in the hand.";
+        throw string("The token doesnt exist in the hand.");
     if (next_players_order[0] == current_player)
-        throw "Already have the initiave.";
+        throw string("Already have the initiave.");
 
     swap(next_players_order[0], next_players_order[1]);
 }
@@ -386,30 +393,37 @@ void board::play_turn()
     cout << print_board() << print_game_status() << endl;
     cout << "Enter Place, Control, Move, Recruit, Attack or Initiative" << endl;
 
-    string command;
-    cin >> command;
-    if (command == "Place")
+    try
     {
-        position p = ask_for_position();
+        string command;
+        cin >> command;
+        if (command == "Place")
+        {
+            position p = ask_for_position();
+        }
+        else if (command == "Control")
+        {
+        }
+        else if (command == "Move")
+        {
+        }
+        else if (command == "Recruit")
+        {
+        }
+        else if (command == "Attack")
+        {
+        }
+        else if (command == "Initiative")
+        {
+        }
+        else
+        {
+            cout << "Wrong input." << endl;
+        }
     }
-    else if (command == "Control")
+    catch (string s)
     {
-    }
-    else if (command == "Move")
-    {
-    }
-    else if (command == "Recruit")
-    {
-    }
-    else if (command == "Attack")
-    {
-    }
-    else if (command == "Initiative")
-    {
-    }
-    else
-    {
-        cout << "Wrong input." << endl;
+        cout << s << endl;
     }
 
     cout << endl;
@@ -423,7 +437,7 @@ void board::play()
         {
             current_player = players_order[_i];
             get_hand(current_player);
-            while (!hand[current_player].empty())
+            while (!hand[current_player].empty()) 
                 play_turn();
         }
         players_order = next_players_order;
