@@ -255,13 +255,50 @@ void board::recruit(token t) {
 }
 
 
-void board::attack(position p, token t, token rival_t) {
+void board::attack(position p, token t, position rival_p, token rival_t) {
+    if (!token_in(hand[current_player], t))
+        throw invalid_argument("The token doesnt exist in the hand.");
+    if (!is_token_from_player_in_position(p, current_player, t))
+        throw invalid_argument("The token doesnt exist in the position.");
+    if (!is_token_from_player_in_position(rival_p, 1 - current_player, rival_t))
+        throw invalid_argument("The rival token doesnt exist in the position.");
 
+    if (t == Archer) {
+        if (max(abs(p.first - rival_p.first), abs(p.second - rival_p.second)) > 2) 
+            throw invalid_argument("Can't reach that far.");
+    }
+    else if (t == Crossbowman) {
+        if (p.first != rival_p.first && p.second != rival_p.second)
+            throw invalid_argument("Can't attack diagonally.");
+        if (abs(p.first - rival_p.first) + abs(p.second - rival_p.second) > 2)
+            throw invalid_argument("Can't reach that far.");
+    }
+    else if (t == Knight) {
+        if (p.first != rival_p.first && p.second != rival_p.second)
+            throw invalid_argument("Can't attack diagonally.");
+        if (abs(p.first - rival_p.first) + abs(p.second - rival_p.second) > 1)
+            throw invalid_argument("Can't reach that far.");
+    }
+    else if (t == Mercenary) {
+        if (p.first != rival_p.first && p.second != rival_p.second)
+            throw invalid_argument("Can't attack diagonally.");
+        if (abs(p.first - rival_p.first) + abs(p.second - rival_p.second) > 1)
+            throw invalid_argument("Can't reach that far.");
+    }
+
+    erase_token_from(hand[current_player], t);
+    discard[current_player].push_back(t);
+    erase_token_from_map(rival_p, 1 - current_player, rival_t);
 }
 
 
-void board::initiative(token k) {
+void board::initiative(token t) {
+    if (!token_in(hand[current_player], t))
+        throw invalid_argument("The token doesnt exist in the hand.");
+    if (next_players_order[0] == current_player)
+        throw invalid_argument("Already have the initiave.");
 
+    swap(next_players_order[0], next_players_order[1]);
 }
 
 

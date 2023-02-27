@@ -36,7 +36,7 @@ private:
     void control(position p, token t);
     void move(position p, position new_p, token t);
     void recruit(token k);
-    void attack(position p, token t, token rival_t);
+    void attack(position p, token t, position rival_p, token rival_t);
     void initiative(token k);
     bool won(int player);
     bool lost(int player);
