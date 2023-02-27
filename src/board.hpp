@@ -29,7 +29,7 @@ private:
     map<position, vector<token_with_player>> board_map;
     vector<token> bag[2], hand[2], recruitment[2], discard[2];
     int control_tokens[2] = {3, 3};
-    vector<position> control_zones = {{0, 0}, {1, 3}, {3, 1}, {2, 3}, {3, 2}, {4, 4}};
+    vector<position> control_zones = {{0, 0}, {1, 2}, {2, 1}, {2, 3}, {3, 2}, {4, 4}};
     string print_board();
     string print_game_status();
     void place(position p, token t);
@@ -42,6 +42,9 @@ private:
     bool lost(int player);
     bool is_token_from_player_in_position(position p, int a, token t);
     bool adjacent_control_token_exists(position p, int player);
+    bool player_has_token_in_position(position p);
+    bool is_control_zone(position p);
+    void erase_token_from_map(position p, int player, token t);
 
 public:
     board();

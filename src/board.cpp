@@ -81,6 +81,16 @@ board::board() {
     }
 }
 
+
+bool board::is_control_zone(position p) {
+    for(position pz : control_zones){
+        if (p == pz)
+            return true;
+    }
+    return false;
+}
+
+
 string board::print_board() {
     string ret;
     ret += "  | 0  1  2  3  4 \n";
@@ -98,7 +108,9 @@ string board::print_board() {
 
             row_str += " ";
             if (!player_name.empty())
-                row_str +=player_name[0];
+                row_str += player_name[0];
+            else if (is_control_zone({row, col}))
+                row_str += 'X';
             else
                 row_str += ".";
             row_str += " ";
@@ -143,6 +155,14 @@ bool board::is_token_from_player_in_position(position p, int player, token t) {
     return false;
 }
 
+bool board::player_has_token_in_position(position p) {
+    for(auto &[_, player] : board_map[p]) {
+        if (player == player)
+            return true;
+    }
+    return false;
+}
+
 
 bool board::adjacent_control_token_exists(position p, int player) {
     for(position adj_p : get_adjacent_positions(p)) {
@@ -150,6 +170,16 @@ bool board::adjacent_control_token_exists(position p, int player) {
             return true;
     }
     return false;
+}
+
+
+void board::erase_token_from_map(position p, int player, token t) {
+    for(auto it = board_map[p].begin(); it != board_map[p].end(); ++it) {
+        if (it->first == t && it->second == player){
+            board_map[p].erase(it);
+            return;
+        }
+    }
 }
 
 
@@ -167,7 +197,26 @@ void board::place(position p, token t) {
 
 
 void board::control(position p, token t) {
+    if (!is_position_inside(p))
+        throw invalid_argument("Position out of board.");
+    if (!token_in(hand[current_player], t))
+        throw invalid_argument("The token doesnt exist in the hand.");
+    if (is_token_from_player_in_position(p, current_player, Control))
+        throw invalid_argument("This position is already under control.");
+    if (!player_has_token_in_position(p))
+        throw invalid_argument("No token in the given position.");
+    if (!is_control_zone(p))
+        throw invalid_argument("This isn't a capture zone.");
 
+    
+    erase_token_from(hand[current_player], t);
+    discard[current_player].push_back(t);
+    board_map[p].push_back({Control, current_player});
+    control_tokens[current_player]--;
+    if (is_token_from_player_in_position(p, 1 - current_player, Control)) {
+        control_tokens[1 - current_player]++;
+        erase_token_from_map(p, 1 - current_player, Control);
+    }
 }
 
 
