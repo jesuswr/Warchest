@@ -1,7 +1,3 @@
-#include <vector>
-#include <string>
-#include <map>
-#include <iostream>
 #include "board.hpp"
 #include "warchest.hpp"
 
@@ -9,6 +5,8 @@ using namespace std;
 
 
 void play() {
+    board b;
+    b.play();
 }
 
 int main() {

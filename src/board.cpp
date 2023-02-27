@@ -6,6 +6,18 @@
 
 using namespace std;
 
+
+vector<vector<pair<int, token>>> assign_units() {
+    vector<pair<int, token>> units = {{4, Archer}, {5, Crossbowman}, {5, Knight}, {5, Mercenary}};
+    random_shuffle(units.begin(), units.end());
+    return {{units[0], units[1]}, {units[2], units[3]}};
+}
+
+string get_player_name(int player) {
+    return PLAYER_NAME[player];
+}
+
+
 // init bag, recruitment and control
 board::board() {
     // assign initial control tokens to corners of board
@@ -26,13 +38,31 @@ board::board() {
     }
 }
 
-string board::get_current_player() {
-    return PLAYER_NAME[current_player];
-}
-
-
 string board::print_board() {
-    return "";
+    string ret;
+    ret += "  | 0  1  2  3  4 \n";
+    ret += "------------------\n";
+    for(int row = 0; row < 5; ++row) {
+        string row_str;
+        row_str += to_string(row) + " |";
+        for(int col = 0; col < 5; ++col) {
+            // first look for a control token, if found add it, else add a dot
+            string player_name;
+            for(auto [tk, ply] : board_map[{row, col}]) {
+                if (tk == Control)
+                    player_name = get_player_name(ply);
+            }
+
+            row_str += " ";
+            if (player_name.empty())
+                row_str += to_string(col);
+            else
+                row_str += ".";
+            row_str += " ";
+        }
+        row_str += "\n";
+    }
+    return ret;
 }
 
 
@@ -81,8 +111,8 @@ bool board::lost(int player) {
 }
 
 
-vector<vector<pair<int, token>>, vector<pair<int, token>>> assign_units() {
-    vector<pair<int, token>> units = {{4, Archer}, {5, Crossbowman}, {5, Knight}, {5, Mercenary}};
-    random_shuffle(units.begin(), units.end());
-    return {{units[0], units[1]}, {units[2], units[3]}};
+void board::play() {
+    cout << print_board() << endl;
 }
+
+

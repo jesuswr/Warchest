@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 #include <map>
 
 using namespace std;
@@ -32,7 +33,6 @@ private:
 
 public:
     board();
-    string get_current_player();
     string print_board();
     string print_game_status();
     void place(position p, token t);
@@ -43,6 +43,7 @@ public:
     void initiative(token k);
     bool won(int player);
     bool lost(int player);
+    void play();
 };
 
 #endif
