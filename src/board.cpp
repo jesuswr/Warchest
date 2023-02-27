@@ -7,6 +7,42 @@
 using namespace std;
 
 
+bool is_position_inside(position p) {
+    return (max(p.first, p.second) <= 4 || min(p.first, p.second) >= 0);
+}
+
+
+vector<position> get_adjacent_positions(position p) {
+    vector<position> ret;
+    vector< pair<int, int> > moves = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+    for(auto [dr, dc] : moves) {
+        position new_p = {p.first + dr, p.second + dc};
+        if (is_position_inside(new_p))
+            ret.push_back(new_p);
+    }
+    return ret;
+}
+
+
+bool token_in(const vector<token> &tokens, token t) {
+    for(token k : tokens){
+        if (k == t)
+            return true;
+    }
+    return false;
+}
+
+
+void erase_token_from(vector<token> &tokens, token t) {
+    for(auto it = tokens.begin(); it != tokens.end(); ++it) {
+        if (*it == t) {
+            tokens.erase(it);
+            return;
+        }
+    }
+}
+
+
 vector<vector<pair<int, token>>> assign_units() {
     // randomize the units, first two to a player and the other to the other player
     vector<pair<int, token>> units = {{4, Archer}, {5, Crossbowman}, {5, Knight}, {5, Mercenary}};
@@ -14,8 +50,14 @@ vector<vector<pair<int, token>>> assign_units() {
     return {{units[0], units[1]}, {units[2], units[3]}};
 }
 
+
 string get_player_name(int player) {
     return PLAYER_NAME[player];
+}
+
+
+string get_token_name(token tk) {
+    return TOKEN_NAME[tk];
 }
 
 
@@ -69,12 +111,58 @@ string board::print_board() {
 
 
 string board::print_game_status() {
-    return "";
+    string ret;
+    ret += "CURRENT PLAYER: " + get_player_name(current_player) + "\n"; 
+    ret += "IN HAND:";
+    for(token x : hand[current_player]) ret += "  " + get_token_name(x);
+    ret += "\nIN BAG:";
+    for(token x : bag[current_player]) ret += "  " + get_token_name(x); 
+    ret += "\nIN RECRUITMENT:";
+    for(token x : recruitment[current_player]) ret += "  " + get_token_name(x); 
+    ret += "\nIN DISCARD:";
+    for(token x : discard[current_player]) ret += "  " + get_token_name(x); 
+
+    for(auto &[pos, tokens_in_pos] : board_map) {
+        if (!tokens_in_pos.empty()) {
+            ret += "\nUnits/Token in position (" + to_string(pos.first) + ", " + to_string(pos.second) +"): ";
+            for(auto [tk, player] : tokens_in_pos) {
+                ret += get_token_name(tk) + "(" + get_player_name(player) +") ";
+            }
+        } 
+    }
+    ret += "\n";
+    return ret;
+}
+
+
+bool board::is_token_from_player_in_position(position p, int player, token t) {
+    for(auto &[tok, player] : board_map[p]) {
+        if (tok == t && player == player)
+            return true;
+    }
+    return false;
+}
+
+
+bool board::adjacent_control_token_exists(position p, int player) {
+    for(position adj_p : get_adjacent_positions(p)) {
+        if (is_token_from_player_in_position(adj_p, player, Control))
+            return true;
+    }
+    return false;
 }
 
 
 void board::place(position p, token t) {
+    if (!is_position_inside(p))
+        throw invalid_argument("Position out of board.");
+    if (!adjacent_control_token_exists(p, current_player))
+        throw invalid_argument("Position not adjacent to a controlled position.");
+    if (!token_in(hand[current_player], t))
+        throw invalid_argument("The token doesnt exist in the hand.");
 
+    erase_token_from(hand[current_player], t);
+    board_map[p].push_back({t, current_player});
 }
 
 
@@ -114,7 +202,7 @@ bool board::lost(int player) {
 
 
 void board::play() {
-    cout << print_board() << endl;
+    cout << print_board() << print_game_status() << endl;
 }
 
 

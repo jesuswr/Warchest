@@ -11,10 +11,10 @@ using namespace std;
 const string PLAYER_NAME[2] = {"Wolf", "Crow"};
 
 // Enum to represent the different tokens of the game
-enum token {Archer = 0, Crossbowman = 1, Knight = 2, Mercenary = 3, Royal = 4, Control};
+enum token {Archer = 0, Crossbowman = 1, Knight = 2, Mercenary = 3, Royal = 4, Control = 5};
 
 // Tokens names to print
-const string TOKEN_NAME[5] = {"Archer", "Crossbowman", "Knight", "Mercenary", "Royal"};
+const string TOKEN_NAME[6] = {"Archer", "Crossbowman", "Knight", "Mercenary", "Royal", "Control"};
 
 // type to represent a position in the board and a token owned by a player (player 0 and 1)
 typedef pair<int, int> position;
@@ -30,9 +30,6 @@ private:
     vector<token> bag[2], hand[2], recruitment[2], discard[2];
     int control_tokens[2] = {3, 3};
     vector<position> control_zones = {{0, 0}, {1, 3}, {3, 1}, {2, 3}, {3, 2}, {4, 4}};
-
-public:
-    board();
     string print_board();
     string print_game_status();
     void place(position p, token t);
@@ -43,6 +40,11 @@ public:
     void initiative(token k);
     bool won(int player);
     bool lost(int player);
+    bool is_token_from_player_in_position(position p, int a, token t);
+    bool adjacent_control_token_exists(position p, int player);
+
+public:
+    board();
     void play();
 };
 
