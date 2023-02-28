@@ -58,6 +58,14 @@ TEST_CASE("attack tests")
     REQUIRE_THROWS(TB.test_attack_Crossbowman_incorrect(&b));
 }
 
+TEST_CASE("initiative tests")
+{
+    board b;
+    REQUIRE_NOTHROW(TB.test_initiative_correct(&b));
+    REQUIRE_THROWS(TB.test_initiative_incorrect_already_have_it(&b));
+    REQUIRE_THROWS(TB.test_initiative_incorrect_not_in_hand(&b));
+}
+
 void test_board::test_place_correct(board *b)
 {
     int player = 0;
@@ -215,28 +223,28 @@ void test_board::test_move_incorrect_no_unit_in_board(board *b)
 void test_board::test_recruit_correct(board *b)
 {
     int player = 0;
-    position p = {2, 2}, new_p = {2, 3};
     b->current_player = player;
     b->hand[player] = {Knight};
     b->recruitment[player] = {Archer, Knight};
+
     b->recruit(Knight, Knight);
 }
 void test_board::test_recruit_correct_royal(board *b)
 {
     int player = 0;
-    position p = {2, 2}, new_p = {2, 3};
     b->current_player = player;
     b->hand[player] = {Royal};
     b->recruitment[player] = {Archer, Knight};
+
     b->recruit(Royal, Knight);
 }
 void test_board::test_recruit_incorrect(board *b)
 {
     int player = 0;
-    position p = {2, 2}, new_p = {2, 3};
     b->current_player = player;
     b->hand[player] = {Archer};
     b->recruitment[player] = {Archer, Knight};
+
     b->recruit(Knight, Knight);
 }
 
@@ -249,6 +257,7 @@ void test_board::test_attack_archer_correct(board *b)
     b->board_map[at_p].push_back({at_t, player});
     b->board_map[def_p].push_back({Knight, other_player});
     b->hand[player] = {at_t};
+
     b->attack(at_p, at_t, def_p, Knight);
 }
 void test_board::test_attack_archer_incorrect(board *b)
@@ -260,6 +269,7 @@ void test_board::test_attack_archer_incorrect(board *b)
     b->board_map[at_p].push_back({at_t, player});
     b->board_map[def_p].push_back({Knight, other_player});
     b->hand[player] = {at_t};
+
     b->attack(at_p, at_t, def_p, Knight);
 }
 void test_board::test_attack_Knight_correct(board *b)
@@ -271,6 +281,7 @@ void test_board::test_attack_Knight_correct(board *b)
     b->board_map[at_p].push_back({at_t, player});
     b->board_map[def_p].push_back({Knight, other_player});
     b->hand[player] = {at_t};
+
     b->attack(at_p, at_t, def_p, Knight);
 }
 void test_board::test_attack_Knight_incorrect(board *b)
@@ -282,6 +293,7 @@ void test_board::test_attack_Knight_incorrect(board *b)
     b->board_map[at_p].push_back({at_t, player});
     b->board_map[def_p].push_back({Knight, other_player});
     b->hand[player] = {at_t};
+
     b->attack(at_p, at_t, def_p, Knight);
 }
 void test_board::test_attack_Mercenary_correct(board *b)
@@ -293,6 +305,7 @@ void test_board::test_attack_Mercenary_correct(board *b)
     b->board_map[at_p].push_back({at_t, player});
     b->board_map[def_p].push_back({Knight, other_player});
     b->hand[player] = {at_t};
+
     b->attack(at_p, at_t, def_p, Knight);
 }
 void test_board::test_attack_Mercenary_incorrect(board *b)
@@ -304,6 +317,7 @@ void test_board::test_attack_Mercenary_incorrect(board *b)
     b->board_map[at_p].push_back({at_t, player});
     b->board_map[def_p].push_back({Knight, other_player});
     b->hand[player] = {at_t};
+
     b->attack(at_p, at_t, def_p, Knight);
 }
 void test_board::test_attack_Crossbowman_correct(board *b)
@@ -315,6 +329,7 @@ void test_board::test_attack_Crossbowman_correct(board *b)
     b->board_map[at_p].push_back({at_t, player});
     b->board_map[def_p].push_back({Knight, other_player});
     b->hand[player] = {at_t};
+
     b->attack(at_p, at_t, def_p, Knight);
 }
 void test_board::test_attack_Crossbowman_incorrect(board *b)
@@ -326,5 +341,31 @@ void test_board::test_attack_Crossbowman_incorrect(board *b)
     b->board_map[at_p].push_back({at_t, player});
     b->board_map[def_p].push_back({Knight, other_player});
     b->hand[player] = {at_t};
+
     b->attack(at_p, at_t, def_p, Knight);
+}
+
+void test_board::test_initiative_correct(board *b)
+{
+    int player = 1;
+    b->current_player = player;
+    b->hand[player] = {Royal};
+
+    b->initiative(Royal);
+}
+void test_board::test_initiative_incorrect_already_have_it(board *b)
+{
+    int player = 1;
+    b->current_player = player;
+    b->hand[player] = {Royal};
+
+    b->initiative(Royal);
+}
+void test_board::test_initiative_incorrect_not_in_hand(board *b)
+{
+    int player = 0;
+    b->current_player = player;
+    b->hand[player] = {Royal};
+
+    b->initiative(Archer);
 }

@@ -34,6 +34,10 @@ public:
     void test_attack_Mercenary_incorrect(board *b);
     void test_attack_Crossbowman_correct(board *b);
     void test_attack_Crossbowman_incorrect(board *b);
+
+    void test_initiative_correct(board *b);
+    void test_initiative_incorrect_already_have_it(board *b);
+    void test_initiative_incorrect_not_in_hand(board *b);
 };
 
 #endif
