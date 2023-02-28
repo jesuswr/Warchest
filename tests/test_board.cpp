@@ -37,8 +37,14 @@ TEST_CASE("move tests")
     REQUIRE_THROWS(TB.test_move_incorrect_no_unit_in_board(&b));
 }
 
+TEST_CASE("recruit tests")
+{
+    board b;
+    REQUIRE_NOTHROW(TB.test_recruit_correct(&b));
+    REQUIRE_NOTHROW(TB.test_recruit_correct_royal(&b));
+    REQUIRE_THROWS(TB.test_recruit_incorrect(&b));
 
-
+}
 
 void test_board::test_place_correct(board *b)
 {
@@ -192,4 +198,32 @@ void test_board::test_move_incorrect_no_unit_in_board(board *b)
     b->board_map[p].push_back({Knight, player});
 
     b->move(p, new_p, Archer);
+}
+
+void test_board::test_recruit_correct(board *b)
+{
+    int player = 0;
+    position p = {2, 2}, new_p = {2, 3};
+    b->current_player = player;
+    b->hand[player] = {Knight};
+    b->recruitment[player] = {Archer, Knight};
+    b->recruit(Knight, Knight);
+}
+void test_board::test_recruit_correct_royal(board *b)
+{
+    int player = 0;
+    position p = {2, 2}, new_p = {2, 3};
+    b->current_player = player;
+    b->hand[player] = {Royal};
+    b->recruitment[player] = {Archer, Knight};
+    b->recruit(Royal, Knight);
+}
+void test_board::test_recruit_incorrect(board *b)
+{
+    int player = 0;
+    position p = {2, 2}, new_p = {2, 3};
+    b->current_player = player;
+    b->hand[player] = {Archer};
+    b->recruitment[player] = {Archer, Knight};
+    b->recruit(Knight, Knight);
 }

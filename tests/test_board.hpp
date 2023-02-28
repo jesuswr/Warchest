@@ -21,6 +21,10 @@ public:
     void test_move_incorrect_too_far(board *b);
     void test_move_incorrect_no_unit_in_hand(board *b);
     void test_move_incorrect_no_unit_in_board(board *b);
+
+    void test_recruit_correct(board *b);
+    void test_recruit_correct_royal(board *b);
+    void test_recruit_incorrect(board *b);
 };
 
 #endif
