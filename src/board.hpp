@@ -43,7 +43,7 @@ private:
     void place(position p, token t);
     void control(position p, token t);
     void move(position p, position new_p, token t);
-    void recruit(token k);
+    void recruit(token t_hand, token t_rec);
     void attack(position p, token t, position rival_p, token rival_t);
     void initiative(token k);
     bool won(int player);
@@ -54,6 +54,7 @@ private:
     void erase_token_from_map(position p, int player, token t);
     void get_hand(int player);
     void play_turn();
+    bool cant_play(int p);
 
 public:
     board();

@@ -257,6 +257,8 @@ void board::place(position p, token t)
         throw string("Position not adjacent to a controlled position.");
     if (!token_in(hand[current_player], t))
         throw string("The token doesnt exist in the hand.");
+    if (t == Royal)
+        throw string("Can't place a Royal.");
 
     erase_token_from(hand[current_player], t);
     board_map[p].push_back({t, current_player});
@@ -303,17 +305,19 @@ void board::move(position p, position new_p, token t)
     board_map[new_p].push_back({t, current_player});
 }
 
-void board::recruit(token t)
+void board::recruit(token t_hand, token t_rec)
 {
-    if (!token_in(hand[current_player], t))
+    if (!token_in(hand[current_player], t_hand))
         throw string("The token doesnt exist in the hand.");
-    if (!token_in(recruitment[current_player], t))
+    if (!token_in(recruitment[current_player], t_rec))
         throw string("The token doesnt exist in the recruitment.");
+    if (t_hand != t_rec && t_hand != Royal)
+        throw string("Can't recruit if you don't discard the same unit or a Royal.");
 
-    erase_token_from(hand[current_player], t);
-    discard[current_player].push_back(t);
-    erase_token_from(recruitment[current_player], t);
-    bag[current_player].push_back(t);
+    erase_token_from(hand[current_player], t_hand);
+    discard[current_player].push_back(t_hand);
+    erase_token_from(recruitment[current_player], t_rec);
+    bag[current_player].push_back(t_rec);
 }
 
 void board::attack(position p, token t, position rival_p, token rival_t)
@@ -364,6 +368,8 @@ void board::initiative(token t)
     if (next_players_order[0] == current_player)
         throw string("Already have the initiave.");
 
+    erase_token_from(hand[current_player], t);
+    discard[current_player].push_back(t);
     swap(next_players_order[0], next_players_order[1]);
 }
 
@@ -380,7 +386,6 @@ void board::get_hand(int p)
     {
         bag[p] = discard[p];
         discard[p].clear();
-        random_shuffle(bag[p].begin(), bag[p].end());
         random_shuffle(bag[p].begin(), bag[p].end());
         while (hand[p].size() < 3 && !bag[p].empty())
         {
@@ -399,7 +404,7 @@ void board::play_turn()
 {
     cout << "=================================================" << endl;
     cout << print_board() << print_game_status() << endl;
-    cout << "Enter Place, Control, Move, Recruit, Attack or Initiative" << endl;
+    cout << "Enter Place, Control, Move, Recruit, Attack, Initiative or Pass" << endl;
 
     try
     {
@@ -429,9 +434,10 @@ void board::play_turn()
         }
         else if (command == "Recruit")
         {
-            cout << "Enter the unit" << endl;
+            cout << "Enter the unit you want to discard and the one you want to recruit" << endl;
             token t = ask_for_token();
-            recruit(t);
+            token k = ask_for_token();
+            recruit(t, k);
         }
         else if (command == "Attack")
         {
@@ -448,6 +454,11 @@ void board::play_turn()
             token t = ask_for_token();
             initiative(t);
         }
+        else if (command == "Pass") {
+            for(token tk : hand[current_player])
+                discard[current_player].push_back(tk);
+            hand[current_player].clear();    
+        }
         else
         {
             cout << "Wrong input." << endl;
@@ -461,12 +472,34 @@ void board::play_turn()
     cout << endl;
 }
 
+
+bool board::cant_play(int p) {
+    if (recruitment[p].size() > 0)
+        return false;
+    vector<token> aux;
+    for(token t : bag[p])
+        aux.push_back(t);
+    for(token t : discard[p])
+        aux.push_back(t);
+
+    // if the only card remaining is Royal and there is nothing on the recruitment, no possible move remains
+    if (aux.size() == 1 && aux[0] == Royal)
+        return true;
+    return false;
+}
+
+
 void board::play()
 {
     while (true)
     {
         for (int _i = 0; _i < 2; _i++)
         {
+            if (cant_play(0) && cant_play(1)) {
+                cout << "No player can make a move, it's a tie" << endl;
+                return;
+            }
+
             current_player = players_order[_i];
             get_hand(current_player);
             while (!hand[current_player].empty()) {
