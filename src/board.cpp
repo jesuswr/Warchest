@@ -149,9 +149,9 @@ board::board()
 // check if the token of a player is in a given position
 bool board::is_token_from_player_in_position(position p, int player, token t)
 {
-    for (auto &[tok, player] : board_map[p])
+    for (auto &[tok, _player] : board_map[p])
     {
-        if (tok == t && player == player)
+        if (tok == t && _player == player)
             return true;
     }
     return false;
