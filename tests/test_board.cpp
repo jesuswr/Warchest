@@ -43,7 +43,19 @@ TEST_CASE("recruit tests")
     REQUIRE_NOTHROW(TB.test_recruit_correct(&b));
     REQUIRE_NOTHROW(TB.test_recruit_correct_royal(&b));
     REQUIRE_THROWS(TB.test_recruit_incorrect(&b));
+}
 
+TEST_CASE("attack tests")
+{
+    board b;
+    REQUIRE_NOTHROW(TB.test_attack_archer_correct(&b));
+    REQUIRE_THROWS(TB.test_attack_archer_incorrect(&b));
+    REQUIRE_NOTHROW(TB.test_attack_Knight_correct(&b));
+    REQUIRE_THROWS(TB.test_attack_Knight_incorrect(&b));
+    REQUIRE_NOTHROW(TB.test_attack_Mercenary_correct(&b));
+    REQUIRE_THROWS(TB.test_attack_Mercenary_incorrect(&b));
+    REQUIRE_NOTHROW(TB.test_attack_Crossbowman_correct(&b));
+    REQUIRE_THROWS(TB.test_attack_Crossbowman_incorrect(&b));
 }
 
 void test_board::test_place_correct(board *b)
@@ -226,4 +238,93 @@ void test_board::test_recruit_incorrect(board *b)
     b->hand[player] = {Archer};
     b->recruitment[player] = {Archer, Knight};
     b->recruit(Knight, Knight);
+}
+
+void test_board::test_attack_archer_correct(board *b)
+{
+    position at_p = {0, 0}, def_p = {1, 2};
+    token at_t = Archer;
+    int player = 0, other_player = 1;
+    b->current_player = player;
+    b->board_map[at_p].push_back({at_t, player});
+    b->board_map[def_p].push_back({Knight, other_player});
+    b->hand[player] = {at_t};
+    b->attack(at_p, at_t, def_p, Knight);
+}
+void test_board::test_attack_archer_incorrect(board *b)
+{
+    position at_p = {0, 0}, def_p = {1, 3};
+    token at_t = Archer;
+    int player = 0, other_player = 1;
+    b->current_player = player;
+    b->board_map[at_p].push_back({at_t, player});
+    b->board_map[def_p].push_back({Knight, other_player});
+    b->hand[player] = {at_t};
+    b->attack(at_p, at_t, def_p, Knight);
+}
+void test_board::test_attack_Knight_correct(board *b)
+{
+    position at_p = {0, 0}, def_p = {1, 0};
+    token at_t = Knight;
+    int player = 0, other_player = 1;
+    b->current_player = player;
+    b->board_map[at_p].push_back({at_t, player});
+    b->board_map[def_p].push_back({Knight, other_player});
+    b->hand[player] = {at_t};
+    b->attack(at_p, at_t, def_p, Knight);
+}
+void test_board::test_attack_Knight_incorrect(board *b)
+{
+    position at_p = {0, 0}, def_p = {1, 1};
+    token at_t = Knight;
+    int player = 0, other_player = 1;
+    b->current_player = player;
+    b->board_map[at_p].push_back({at_t, player});
+    b->board_map[def_p].push_back({Knight, other_player});
+    b->hand[player] = {at_t};
+    b->attack(at_p, at_t, def_p, Knight);
+}
+void test_board::test_attack_Mercenary_correct(board *b)
+{
+    position at_p = {0, 0}, def_p = {1, 0};
+    token at_t = Mercenary;
+    int player = 0, other_player = 1;
+    b->current_player = player;
+    b->board_map[at_p].push_back({at_t, player});
+    b->board_map[def_p].push_back({Knight, other_player});
+    b->hand[player] = {at_t};
+    b->attack(at_p, at_t, def_p, Knight);
+}
+void test_board::test_attack_Mercenary_incorrect(board *b)
+{
+    position at_p = {0, 0}, def_p = {1, 1};
+    token at_t = Mercenary;
+    int player = 0, other_player = 1;
+    b->current_player = player;
+    b->board_map[at_p].push_back({at_t, player});
+    b->board_map[def_p].push_back({Knight, other_player});
+    b->hand[player] = {at_t};
+    b->attack(at_p, at_t, def_p, Knight);
+}
+void test_board::test_attack_Crossbowman_correct(board *b)
+{
+    position at_p = {0, 0}, def_p = {2, 0};
+    token at_t = Crossbowman;
+    int player = 0, other_player = 1;
+    b->current_player = player;
+    b->board_map[at_p].push_back({at_t, player});
+    b->board_map[def_p].push_back({Knight, other_player});
+    b->hand[player] = {at_t};
+    b->attack(at_p, at_t, def_p, Knight);
+}
+void test_board::test_attack_Crossbowman_incorrect(board *b)
+{
+    position at_p = {0, 0}, def_p = {1, 1};
+    token at_t = Crossbowman;
+    int player = 0, other_player = 1;
+    b->current_player = player;
+    b->board_map[at_p].push_back({at_t, player});
+    b->board_map[def_p].push_back({Knight, other_player});
+    b->hand[player] = {at_t};
+    b->attack(at_p, at_t, def_p, Knight);
 }

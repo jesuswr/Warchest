@@ -25,6 +25,15 @@ public:
     void test_recruit_correct(board *b);
     void test_recruit_correct_royal(board *b);
     void test_recruit_incorrect(board *b);
+
+    void test_attack_archer_correct(board *b);
+    void test_attack_archer_incorrect(board *b);
+    void test_attack_Knight_correct(board *b);
+    void test_attack_Knight_incorrect(board *b);
+    void test_attack_Mercenary_correct(board *b);
+    void test_attack_Mercenary_incorrect(board *b);
+    void test_attack_Crossbowman_correct(board *b);
+    void test_attack_Crossbowman_incorrect(board *b);
 };
 
 #endif
