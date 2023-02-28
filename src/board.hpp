@@ -1,6 +1,7 @@
 #ifndef _BOARD_HPP
 #define _BOARD_HPP
 
+#include "../tests/test_board.hpp"
 #include <vector>
 #include <string>
 #include <iostream>
@@ -76,6 +77,8 @@ public:
 
     // method to play a game
     void play();
+
+    friend test_board;
 };
 
 #endif

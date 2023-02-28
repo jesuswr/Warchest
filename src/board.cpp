@@ -1,3 +1,4 @@
+#include "../tests/test_board.hpp"
 #include <vector>
 #include <string>
 #include <map>
