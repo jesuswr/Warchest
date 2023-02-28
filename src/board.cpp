@@ -8,16 +8,20 @@
 
 using namespace std;
 
+// check if position is in the board
 bool is_position_inside(position p)
 {
     return (max(p.first, p.second) <= 4 || min(p.first, p.second) >= 0);
 }
 
+// check is two positions are adjacent
 bool are_positions_adjacent(position a, position b)
 {
+    // if a and b are adjacent. the row or column are equal, and the other one differs by one
     return (a.first == b.first && abs(a.second - b.second) == 1) || (a.second == b.second && abs(a.first - b.first) == 1);
 }
 
+// ask the user for a position (two integers) and return it
 position ask_for_position()
 {
     position p;
@@ -25,6 +29,7 @@ position ask_for_position()
     cin >> p.first >> p.second;
     if (!cin.good())
     {
+        // if the input wasn't two numbers, clear input buffer
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         throw string("Wrong position input.");
@@ -32,6 +37,7 @@ position ask_for_position()
     return p;
 }
 
+// ask the user for a unit and return it
 token ask_for_token()
 {
     string s;
@@ -50,10 +56,12 @@ token ask_for_token()
     throw string("Wrong input unit.");
 }
 
+// get positions adjacent to p
 vector<position> get_adjacent_positions(position p)
 {
     vector<position> ret;
     vector<pair<int, int>> moves = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+    // generate all adjacent positions with the moves vector
     for (auto [dr, dc] : moves)
     {
         position new_p = {p.first + dr, p.second + dc};
@@ -63,6 +71,7 @@ vector<position> get_adjacent_positions(position p)
     return ret;
 }
 
+// check if token is in vector
 bool token_in(const vector<token> &tokens, token t)
 {
     for (token k : tokens)
@@ -73,6 +82,7 @@ bool token_in(const vector<token> &tokens, token t)
     return false;
 }
 
+// erase token from vector, doesnt do anything if token doesnt exist
 void erase_token_from(vector<token> &tokens, token t)
 {
     for (auto it = tokens.begin(); it != tokens.end(); ++it)
@@ -85,6 +95,7 @@ void erase_token_from(vector<token> &tokens, token t)
     }
 }
 
+// split the initial units radomly between two vectors
 vector<vector<pair<int, token>>> assign_units()
 {
     // randomize the units, first two to a player and the other to the other player
@@ -93,11 +104,13 @@ vector<vector<pair<int, token>>> assign_units()
     return {{units[0], units[1]}, {units[2], units[3]}};
 }
 
+// get player name
 string get_player_name(int player)
 {
     return PLAYER_NAME[player];
 }
 
+// get token name
 string get_token_name(token tk)
 {
     return TOKEN_NAME[tk];
@@ -107,7 +120,7 @@ string get_token_name(token tk)
 board::board()
 {
     // init random seed for random shuffles later
-    std::srand ( unsigned ( time(0) ) );
+    std::srand(unsigned(time(0)));
 
     // assign initial control tokens to corners of board
     board_map[{0, 0}].push_back({Control, 0});
@@ -127,10 +140,106 @@ board::board()
             for (int i = 0; i < n_unit - 2; ++i)
                 recruitment[p].push_back(unit);
         }
+        // add the royal to the bag
         bag[p].push_back(Royal);
     }
 }
 
+// check if the token of a player is in a given position
+bool board::is_token_from_player_in_position(position p, int player, token t)
+{
+    for (auto &[tok, player] : board_map[p])
+    {
+        if (tok == t && player == player)
+            return true;
+    }
+    return false;
+}
+
+// check if any token from a player is in a given position
+bool board::player_has_token_in_position(position p, int ply)
+{
+    for (auto &[_, player] : board_map[p])
+    {
+        if (player == ply)
+            return true;
+    }
+    return false;
+}
+
+// check if there exists a control token in an adjacent zone
+bool board::adjacent_control_token_exists(position p, int player)
+{
+    for (position adj_p : get_adjacent_positions(p))
+    {
+        if (is_token_from_player_in_position(adj_p, player, Control))
+            return true;
+    }
+    return false;
+}
+
+// erase a players token from a position in the board
+void board::erase_token_from_map(position p, int player, token t)
+{
+    for (auto it = board_map[p].begin(); it != board_map[p].end(); ++it)
+    {
+        if (it->first == t && it->second == player)
+        {
+            board_map[p].erase(it);
+            return;
+        }
+    }
+}
+
+// get hand for player p
+void board::get_hand(int p)
+{
+    // random shuffle cards to get them in random order
+    random_shuffle(bag[p].begin(), bag[p].end());
+    while (hand[p].size() < 3 && !bag[p].empty())
+    {
+        hand[p].push_back(bag[p].back());
+        bag[p].pop_back();
+    }
+
+    // if hand size is less than 3, move discard to bag, shuffle again and pick the necesary units
+    if (hand[p].size() < 3)
+    {
+        bag[p] = discard[p];
+        discard[p].clear();
+        random_shuffle(bag[p].begin(), bag[p].end());
+        while (hand[p].size() < 3 && !bag[p].empty())
+        {
+            hand[p].push_back(bag[p].back());
+            bag[p].pop_back();
+        }
+    }
+}
+
+// check if a player won, if he has 0 control tokens it means that he placed 3 more and now has 4 control zones
+bool board::won(int player)
+{
+    return control_tokens[player] == 0;
+}
+
+// check if a player cant do anything, if he only has the royal and no unit to recruit, nothing to do
+bool board::cant_play(int p)
+{
+    if (recruitment[p].size() > 0)
+        return false;
+    vector<token> aux;
+    for (token t : bag[p])
+        aux.push_back(t);
+    for (token t : discard[p])
+        aux.push_back(t);
+
+    // if the only card remaining is Royal and there is nothing on the recruitment, no possible move remains
+    if (aux.size() == 1 && aux[0] == Royal)
+        return true;
+    return false;
+}
+
+// check if a position is a control zone
 bool board::is_control_zone(position p)
 {
     for (position pz : control_zones)
@@ -141,6 +250,7 @@ bool board::is_control_zone(position p)
     return false;
 }
 
+// return a string representing the state of the board
 string board::print_board()
 {
     string ret;
@@ -175,6 +285,7 @@ string board::print_board()
     return ret;
 }
 
+// return a string representing game status like units in board, units in bag, ...
 string board::print_game_status()
 {
     string ret;
@@ -207,48 +318,7 @@ string board::print_game_status()
     return ret;
 }
 
-bool board::is_token_from_player_in_position(position p, int player, token t)
-{
-    for (auto &[tok, player] : board_map[p])
-    {
-        if (tok == t && player == player)
-            return true;
-    }
-    return false;
-}
-
-bool board::player_has_token_in_position(position p)
-{
-    for (auto &[_, player] : board_map[p])
-    {
-        if (player == player)
-            return true;
-    }
-    return false;
-}
-
-bool board::adjacent_control_token_exists(position p, int player)
-{
-    for (position adj_p : get_adjacent_positions(p))
-    {
-        if (is_token_from_player_in_position(adj_p, player, Control))
-            return true;
-    }
-    return false;
-}
-
-void board::erase_token_from_map(position p, int player, token t)
-{
-    for (auto it = board_map[p].begin(); it != board_map[p].end(); ++it)
-    {
-        if (it->first == t && it->second == player)
-        {
-            board_map[p].erase(it);
-            return;
-        }
-    }
-}
-
+// place action
 void board::place(position p, token t)
 {
     if (!is_position_inside(p))
@@ -264,6 +334,7 @@ void board::place(position p, token t)
     board_map[p].push_back({t, current_player});
 }
 
+// control action
 void board::control(position p, token t)
 {
     if (!is_position_inside(p))
@@ -272,7 +343,7 @@ void board::control(position p, token t)
         throw string("The token doesnt exist in the hand.");
     if (is_token_from_player_in_position(p, current_player, Control))
         throw string("This position is already under control.");
-    if (!player_has_token_in_position(p))
+    if (!player_has_token_in_position(p, current_player))
         throw string("No token in the given position.");
     if (!is_control_zone(p))
         throw string("This isn't a capture zone.");
@@ -281,6 +352,7 @@ void board::control(position p, token t)
     discard[current_player].push_back(t);
     board_map[p].push_back({Control, current_player});
     control_tokens[current_player]--;
+    // if the other player had control of the zone, return the control token to him
     if (is_token_from_player_in_position(p, 1 - current_player, Control))
     {
         control_tokens[1 - current_player]++;
@@ -288,6 +360,7 @@ void board::control(position p, token t)
     }
 }
 
+// move action
 void board::move(position p, position new_p, token t)
 {
     if (!is_position_inside(p) || !is_position_inside(new_p))
@@ -305,6 +378,7 @@ void board::move(position p, position new_p, token t)
     board_map[new_p].push_back({t, current_player});
 }
 
+// recruit action
 void board::recruit(token t_hand, token t_rec)
 {
     if (!token_in(hand[current_player], t_hand))
@@ -320,6 +394,7 @@ void board::recruit(token t_hand, token t_rec)
     bag[current_player].push_back(t_rec);
 }
 
+// attack action
 void board::attack(position p, token t, position rival_p, token rival_t)
 {
     if (!token_in(hand[current_player], t))
@@ -329,6 +404,7 @@ void board::attack(position p, token t, position rival_p, token rival_t)
     if (!is_token_from_player_in_position(rival_p, 1 - current_player, rival_t))
         throw string("The rival token doesnt exist in the position.");
 
+    // check if the unit can attack the rival position
     if (t == Archer)
     {
         if (max(abs(p.first - rival_p.first), abs(p.second - rival_p.second)) > 2)
@@ -361,6 +437,7 @@ void board::attack(position p, token t, position rival_p, token rival_t)
     erase_token_from_map(rival_p, 1 - current_player, rival_t);
 }
 
+// initiative action
 void board::initiative(token t)
 {
     if (!token_in(hand[current_player], t))
@@ -373,33 +450,7 @@ void board::initiative(token t)
     swap(next_players_order[0], next_players_order[1]);
 }
 
-void board::get_hand(int p)
-{
-    random_shuffle(bag[p].begin(), bag[p].end());
-    while (hand[p].size() < 3 && !bag[p].empty())
-    {
-        hand[p].push_back(bag[p].back());
-        bag[p].pop_back();
-    }
-
-    if (hand[p].size() < 3)
-    {
-        bag[p] = discard[p];
-        discard[p].clear();
-        random_shuffle(bag[p].begin(), bag[p].end());
-        while (hand[p].size() < 3 && !bag[p].empty())
-        {
-            hand[p].push_back(bag[p].back());
-            bag[p].pop_back();
-        }
-    }
-}
-
-bool board::won(int player)
-{
-    return control_tokens[player] == 0;
-}
-
+// method to play a turn
 void board::play_turn()
 {
     cout << "=================================================" << endl;
@@ -454,10 +505,11 @@ void board::play_turn()
             token t = ask_for_token();
             initiative(t);
         }
-        else if (command == "Pass") {
-            for(token tk : hand[current_player])
+        else if (command == "Pass")
+        {
+            for (token tk : hand[current_player])
                 discard[current_player].push_back(tk);
-            hand[current_player].clear();    
+            hand[current_player].clear();
         }
         else
         {
@@ -472,39 +524,26 @@ void board::play_turn()
     cout << endl;
 }
 
-
-bool board::cant_play(int p) {
-    if (recruitment[p].size() > 0)
-        return false;
-    vector<token> aux;
-    for(token t : bag[p])
-        aux.push_back(t);
-    for(token t : discard[p])
-        aux.push_back(t);
-
-    // if the only card remaining is Royal and there is nothing on the recruitment, no possible move remains
-    if (aux.size() == 1 && aux[0] == Royal)
-        return true;
-    return false;
-}
-
-
+// main method to play a game
 void board::play()
 {
     while (true)
     {
         for (int _i = 0; _i < 2; _i++)
         {
-            if (cant_play(0) && cant_play(1)) {
+            if (cant_play(0) && cant_play(1))
+            {
                 cout << "No player can make a move, it's a tie" << endl;
                 return;
             }
 
             current_player = players_order[_i];
             get_hand(current_player);
-            while (!hand[current_player].empty()) {
+            while (!hand[current_player].empty())
+            {
                 play_turn();
-                if (won(current_player)) {
+                if (won(current_player))
+                {
                     cout << "Player " << get_player_name(current_player) << " won!" << endl;
                     return;
                 }

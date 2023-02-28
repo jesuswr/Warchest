@@ -32,32 +32,49 @@ typedef pair<token, int> token_with_player;
 class board
 {
 private:
-    int turn = 0, current_player = 0;
+    int current_player = 0;
+    // vectors to keep player order in current and next turn, this way
+    // take initiative is just a reverse on next order
     vector<int> players_order = {0, 1}, next_players_order = {0, 1};
+    // Map from position to a vector of elements, to store things in the board
     map<position, vector<token_with_player>> board_map;
     vector<token> bag[2], hand[2], recruitment[2], discard[2];
+    // number of control tokens of each player
     int control_tokens[2] = {3, 3};
+    // vector of the positions of the control zones
     vector<position> control_zones = {{0, 0}, {1, 2}, {2, 1}, {2, 3}, {3, 2}, {4, 4}};
+    // methods to print the board and status of the game
     string print_board();
     string print_game_status();
+
+    // methods to do the different actions of the game
     void place(position p, token t);
     void control(position p, token t);
     void move(position p, position new_p, token t);
     void recruit(token t_hand, token t_rec);
     void attack(position p, token t, position rival_p, token rival_t);
     void initiative(token k);
+
+    // method to check if a player won
     bool won(int player);
+
+    // helper methods
     bool is_token_from_player_in_position(position p, int a, token t);
     bool adjacent_control_token_exists(position p, int player);
-    bool player_has_token_in_position(position p);
+    bool player_has_token_in_position(position p, int player);
     bool is_control_zone(position p);
     void erase_token_from_map(position p, int player, token t);
     void get_hand(int player);
-    void play_turn();
     bool cant_play(int p);
 
+    // method to play a turn
+    void play_turn();
+
 public:
+    // constructor to initialize the structure of the board
     board();
+
+    // method to play a game
     void play();
 };
 
