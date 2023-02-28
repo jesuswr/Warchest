@@ -15,6 +15,12 @@ public:
     void test_control_incorrect_no_unit(board *b);
     void test_control_incorrect_not_control_zone(board *b);
     void test_control_take_control_zone_from_rival(board *b);
+
+    void test_move_correct(board *b);
+    void test_move_incorrect_diagonal(board *b);
+    void test_move_incorrect_too_far(board *b);
+    void test_move_incorrect_no_unit_in_hand(board *b);
+    void test_move_incorrect_no_unit_in_board(board *b);
 };
 
 #endif
